@@ -80,11 +80,15 @@ GET http://localhost:8000/result-image/5cf612dc...
 
 ```
 your_project/
-├── app.py
+├── app/
+│   └── main.py  
+│   └── yolov8_model.pt  
 ├── model/
 │   └── best.pt          # Model YOLOv8
 ├── static/
 │   └── results/         # Gambar hasil segmentasi disimpan di sini
+├── README.MD
+├── requirement.txt
 ```
 
 ---
@@ -98,7 +102,7 @@ pip install fastapi uvicorn matplotlib ultralytics
 
 2. Jalankan server:
 ```bash
-uvicorn app:app --reload
+uvicorn app.main:app --reload
 ```
 
 3. Server akan tersedia di:
