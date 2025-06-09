@@ -2,5 +2,5 @@ fastapi==0.115.12
 matplotlib==3.10.3
 numpy==2.3.0
 Pillow==11.2.1
-skimage==0.0
+scikit-image==0.25.2
 ultralytics==8.3.151
