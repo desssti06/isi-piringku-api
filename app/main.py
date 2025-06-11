@@ -12,7 +12,7 @@ import uuid
 
 app = FastAPI()
 
-model = YOLO("model/best.pt")  # Ganti dengan path model kamu
+model = YOLO("https://drive.google.com/file/d/1-Vy38rqtDLvVLgnEQ47YsQpHj5Gq5mzA/view?usp=sharing")  
 
 CATEGORY_MAP = {
     0: "buah",
