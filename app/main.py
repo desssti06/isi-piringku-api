@@ -137,3 +137,7 @@ async def get_result_image(image_id: str):
     if os.path.exists(filepath):
         return FileResponse(filepath, media_type="image/png")
     return JSONResponse({"error": "Image not found"}, status_code=404)
+
+@app.on_event("startup")
+def startup_event():
+    os.makedirs("static/results", exist_ok=True)
