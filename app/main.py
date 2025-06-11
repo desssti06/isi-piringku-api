@@ -9,22 +9,10 @@ import random
 import shutil
 import os
 import uuid
-import gdown  # pastikan ada di requirements.txt
 
 app = FastAPI()
 
-# === CONFIG ===
-MODEL_PATH = "models/best.pt"
-DRIVE_FILE_ID = "1-Vy38rqtDLvVLgnEQ47YsQpHj5Gq5mzA"
-DOWNLOAD_URL = f"https://drive.google.com/uc?id={DRIVE_FILE_ID}"
-
-# === Download model jika belum ada ===
-os.makedirs("models", exist_ok=True)
-if not os.path.exists(MODEL_PATH):
-    gdown.download(DOWNLOAD_URL, MODEL_PATH, quiet=False)
-
-# === Load model lokal ===
-model = YOLO(MODEL_PATH)
+model = YOLO("https://drive.google.com/file/d/1-Vy38rqtDLvVLgnEQ47YsQpHj5Gq5mzA/view?usp=sharing")  
 
 CATEGORY_MAP = {
     0: "buah",
@@ -39,11 +27,13 @@ def random_color(alpha=0.4):
 
 @app.post("/predict-isipiring")
 async def predict(file: UploadFile = File(...)):
+    # Simpan gambar temporer
     uid = uuid.uuid4().hex
     temp_filename = f"temp_{uid}.jpg"
     with open(temp_filename, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    # Prediksi
     results = model(temp_filename)[0]
 
     masks = results.masks.data.cpu().numpy()
@@ -90,6 +80,7 @@ async def predict(file: UploadFile = File(...)):
             pecahan = Fraction(float(kekurangan)).limit_denominator(6)
             rekomendasi[cat] = f"Tambahkan sekitar {pecahan.numerator}/{pecahan.denominator} bagian piring {cat}"
 
+    # Gambar hasil
     class_color_map = {cls: random_color() for cls in set(classes)}
     img = plt.imread(temp_filename)
     plt.figure(figsize=(10, 10))
@@ -116,12 +107,14 @@ async def predict(file: UploadFile = File(...)):
                  color='white', fontsize=12, weight='bold',
                  bbox=dict(facecolor=color[:3], alpha=0.7, pad=2))
 
+    # Simpan gambar hasil
     output_dir = "static/results"
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, f"{uid}.png")
     plt.savefig(output_path, bbox_inches='tight')
     plt.close()
 
+    # Hapus gambar asli (opsional)
     os.remove(temp_filename)
 
     return JSONResponse({
@@ -131,13 +124,10 @@ async def predict(file: UploadFile = File(...)):
         "image_url": f"/result-image/{uid}"
     })
 
+
 @app.get("/result-image/{image_id}")
 async def get_result_image(image_id: str):
     filepath = f"static/results/{image_id}.png"
     if os.path.exists(filepath):
         return FileResponse(filepath, media_type="image/png")
     return JSONResponse({"error": "Image not found"}, status_code=404)
-
-@app.on_event("startup")
-def startup_event():
-    os.makedirs("static/results", exist_ok=True)
